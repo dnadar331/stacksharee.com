@@ -1,32 +1,59 @@
+// Import required modules
 const express = require('express');
-const bodyParser = require('body-parser');
-const UserInput = require('./models/UserInput');
 const mongoose = require('mongoose');
+
+// Create Express app
 const app = express();
-app.use(bodyParser.json());
+const PORT = 3000;
+
+// MongoDB connection string
+const MONGODB_URI = 'mongodb+srv://vthakkar4:25Vansh25@@stackshare.8rgbd4p.mongodb.net/';
 
 // Connect to MongoDB
-const mstring = "mongodb+srv://vthakkar4:25Vansh25@@stackshare.8rgbd4p.mongodb.net/Dummy";
-mongoose.connect(mstring, { useNewUrlParser: true, useUnifiedTopology: true }); // Ensure to pass options
-const database = mongoose.connection;
-database.on('error', (error) => console.log(error));
-mongoose.connection.on('connected', () => console.log('Database Connected')); // Change this line
+mongoose.connect(MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+    .then(() => {
+        console.log('Connected to MongoDB');
+    })
+    .catch((err) => {
+        console.error('Error connecting to MongoDB:', err);
+    });
 
-// Route handler for POST request to save user input
-app.post('/submit', async (req, res) => {
+// Define a Mongoose Schema (Example: User)
+const UserSchema = new mongoose.Schema({
+    name: String,
+    email: String,
+    age: Number
+});
+
+// Define a Mongoose Model based on the Schema
+const User = mongoose.model('User', UserSchema);
+
+// Express route to create a new user
+app.post('/users', async (req, res) => {
     try {
-        const { name } = req.body;
-        await UserInput.create({ name });
-        console.log(UserInput);
-        res.status(200).send('Data saved successfully!');
-    } catch (error) {
-        console.error('Error saving data:', error);
-        res.status(500).send('Internal Server Error');
+        const { name, email, age } = req.body;
+        const newUser = new User({ name, email, age });
+        await newUser.save();
+        res.status(201).json(newUser);
+    } catch (err) {
+        res.status(400).json({ message: err.message });
     }
 });
 
-// Start the Express server
-const PORT = process.env.PORT || 3000;
+// Express route to get all users
+app.get('/users', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Start the server
 app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
