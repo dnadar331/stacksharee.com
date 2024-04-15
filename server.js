@@ -1,13 +1,15 @@
 // Import required modules
 const express = require('express');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
 // Create Express app
 const app = express();
 const PORT = 3000;
-
+app.use(express.json());
+app.use(cors());
 // MongoDB connection string
-const MONGODB_URI = 'mongodb+srv://vthakkar4:25Vansh25@@stackshare.8rgbd4p.mongodb.net/';
+const MONGODB_URI = 'mongodb+srv://vthakkar4:password180@stackshare.8rgbd4p.mongodb.net/Dummy';
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI, {
@@ -22,21 +24,26 @@ mongoose.connect(MONGODB_URI, {
     });
 
 // Define a Mongoose Schema (Example: User)
-const UserSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    age: Number
+const userInputSchema = new mongoose.Schema({
+    User_Id: String,
+    password: String
 });
 
-// Define a Mongoose Model based on the Schema
-const User = mongoose.model('User', UserSchema);
 
+
+// Define a Mongoose Model based on the Schema
+const User = mongoose.model('UserInput', userInputSchema);
+// module.export=User
 // Express route to create a new user
-app.post('/users', async (req, res) => {
+app.post('/g_users', async (req, res) => {
     try {
-        const { name, email, age } = req.body;
-        const newUser = new User({ name, email, age });
+
+        const { User_Id, password } = req.body;
+        const newUser = new User({ User_Id, password });
+        console.log(newUser);
         await newUser.save();
+        console.log(newUser);
+        // res.send(newUser);
         res.status(201).json(newUser);
     } catch (err) {
         res.status(400).json({ message: err.message });
